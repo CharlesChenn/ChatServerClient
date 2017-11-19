@@ -114,10 +114,9 @@ void printLog();
 
 int main(int argc, char **argv){
 	pthread_mutex_init(&printLock, NULL);
-	int createNewUser = 0, firstRun = 1, didMalloc = 0, aFlag = 0;
+	int createNewUser = 0, didMalloc = 0, aFlag = 0;
 	int indexName, indexIP, indexPort;
 	verboseTag = 0, gotMotd = 0;
-	(void)firstRun; /* TEMP NOT SURE IF I SHOULD USE LATER */
 	char* parsePtr;
 	friendsList = initUserList();
 
@@ -514,7 +513,6 @@ int main(int argc, char **argv){
 			    				}
 
 			    				if(pid == 0){
-			    					// printf("FORK FOR KFORK FROFKR FORK FORK\n");
 			    					close(fd[1]);
 				    				// printf("fd[0]: %d\tfd[1]: %d\n", fd[0], fd[1]);
 				    				char *params[15];
@@ -638,7 +636,7 @@ int main(int argc, char **argv){
 					    				else if(y == 0)
 					    					sfwrite(&printLock, stdout, "No update needed!\n");
 					    				else if(y == -1)
-					    					sfwrite(&printLock, stdout, "other shit fucked up bruh\n");
+					    					sfwrite(&printLock, stdout, "Something else went wrong\n");
 					    				/* LEAVE NAME! */
 
 					    				char sigSend[MAX_INPUT];
@@ -780,11 +778,9 @@ int main(int argc, char **argv){
 	    				if(FD_ISSET(cursor->fd, &ready_set)){
 	    					memset((char*)chatReceived, 0, MAX_INPUT);
 	    					int x = recvChat(cursor->fd, chatReceived);
-	    					// printf("hi");
 	    					if(x == 1){ //only newline
-	    						// printf("IS IT ONLY NEWLINE?\n");
 	    						// if(chatReceived[0] == '\n'){
-	    						// 	printf("IT WAS A FUCKIGN NEWLINE\n");
+	    						// 	printf("The error was a newline\n");
 	    						// }
 	    					}
 	    					else if(x == -1){
@@ -1167,7 +1163,7 @@ userNode_t* findUserFd(userList_t* ul, int userFd){
 	return NULL;
 }
 
-/* CHANGED WHILE(CURSOR->NEXT SHIT) */
+/* CHANGED WHILE(CURSOR->NEXT) */
 userNode_t* findUserPid(userList_t* ul, pid_t pid){
 	if(ul->head == NULL)
 		sfwrite(&printLock, stdout, "rip\n");

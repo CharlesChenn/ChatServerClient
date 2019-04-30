@@ -51,7 +51,6 @@ int main(int argc, char** argv){
 		ready_set = fdset;
 		select(clientfd+1, &ready_set, NULL, NULL, NULL);
 		if(FD_ISSET(0, &ready_set)){
-			// printSend();
 			char *cursor;
 			char last_char;
 			int count, rv;
@@ -61,27 +60,16 @@ int main(int argc, char** argv){
 				&& (last_char != '\n'); cursor++){
 				rv = read(0, cursor, 1);
 				last_char = *cursor;
-				// if(last_char == 3){
-				// 	write(1, "^c", 2);
-				// }
 			}
-			// *cursor = '\0';
 			if(!strcmp(cmd, "/close\n")){
 				auditCmd(argv[3], "/close", "success", argv[2]);
 				exit(0);
 			}
-			// else if(!strncmp(cmd, "/", 1) && (strlen(cmd)-1 != 2)){
-			// 	char temp[MAX_INPUT];
-	  //   		memset(temp, '\0', MAX_INPUT);
-	  //   		strncpy(temp, cmd, strlen(cmd)-1);
-	  //   		auditCmd(argv[2], temp, "failure", argv[1]);
-			// }
 			/* otherwise, send the message to client to send to server 
 			   to send to other client to send to otehr chat */
 			Send(clientfd, cmd, strlen(cmd));
 		}
 		if(FD_ISSET(clientfd, &ready_set)){
-			// printReceive();
 			int x;
 			x = Recv(clientfd, received);
 			if(x == 0){
@@ -152,11 +140,9 @@ ssize_t Send(int sockfd, const char* buf, size_t len){
 	while(!sentAll){
 		amtSent = send(sockfd, buf, len-amtSent, 0);
 		if(amtSent == len){
-			// send(sockfd, "\n", 1, 0);
 			return amtSent;
 		}
 	}
-	// send(sockfd, "\n", 1, 0);
 	return -1;
 }
 

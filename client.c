@@ -52,7 +52,7 @@
 	strftime(theTime, 20, "%m/%d/%y-%I:%M%P", t); \
 }
 
-typedef struct userNode{ //sizeof struct is 56 bytes. :^)
+typedef struct userNode{ // sizeof struct is 56 bytes
 	char name[32];
 	int fd;
 	pid_t pid;
@@ -64,7 +64,7 @@ typedef struct userNode{ //sizeof struct is 56 bytes. :^)
 typedef struct userList{
 	userNode_t *head;
 	userNode_t *tail;
-	unsigned int size; //number of users connected
+	unsigned int size; // number of users connected
 	int maxFd;
 }userList_t;
 
@@ -185,8 +185,6 @@ int main(int argc, char **argv){
 			}
 			Recv(clientfd, received);
 			parsePtr = strstr(received, "\r\n\r\n");
-			// char* temp = strchr(received, '\r');
-			//if parse ptr is null then don't access it!
 			if(parsePtr == NULL){
 				printf("hehe\n");
 				close(clientfd);
@@ -234,7 +232,6 @@ int main(int argc, char **argv){
 				ready_set = fdset;
 				select(friendsList->maxFd+20, &ready_set, NULL, NULL, NULL);
 				if(FD_ISSET(0, &ready_set)){
-					// printPrompt();
 					char *cursor;
 					char last_char;
 					int count, rv;
@@ -243,9 +240,6 @@ int main(int argc, char **argv){
 						&& (last_char != '\n'); cursor++) { 
 	      				rv = read(0, cursor, 1);
 	      				last_char = *cursor;
-	      				// if(last_char == 3) {
-	        		// 		write(1, "^c", 2);
-	      				// }
 	    			}
 	    			*cursor = '\0';
 	    			if(!strcmp(cmd, "/time\n")){
@@ -272,28 +266,16 @@ int main(int argc, char **argv){
 	    				chatptr2++;
 	    				char *chatptr3 = strchr(chatptr2, '\n');
 	    				chatptr3[0] = '\0';
-	    				// char *sigSend = malloc(MAX_INPUT);
 	    				char sigSend[MAX_INPUT];
 	    				memset(sigSend, 0, MAX_INPUT);
 	    				strcpy(sigSend, MSG_MSG);
-	    				// printf("sigSend: %s\n", sigSend);
 	    				strcat(sigSend, chatptr);
-	    				// printf("sigSend2: %s\n", sigSend);
 	    				strcat(sigSend, " ");
-	    				// printf("sigSend3: %s\n", sigSend);
 	    				strcat(sigSend, argv[indexName]);
-	    				// printf("sigSend4: %s\n", sigSend);
 	    				strcat(sigSend, " ");
-	    				// printf("sigSend5: %s\n", sigSend);
 	    				strcat(sigSend, chatptr2);
-	    				// printf("sigSend6: %s\n", sigSend);
 	    				strcat(sigSend, " \r\n\r\n");
-	    				// printf("sigSend7: %s\n", sigSend);
-	    				// char *plz = strchr(sigSend, '\n'); WOWWWW I DID IT HERE ALREADY LOL
-	    				// plz[0] = ' ';
 	    				sendServerRequest(sigSend);
-	    				// printf("%s\n", sigSend);
-	    				// free(sigSend);
 	    			}else if(!strcmp(cmd, "/audit\n")){
 	    				auditCmd(argv[indexName], "/audit", "success");
 	    				printLog();
@@ -306,7 +288,7 @@ int main(int argc, char **argv){
 	    		}
 	    		if(FD_ISSET(clientfd, &ready_set)){
 	    			if(Recv(clientfd, received) == 0){
-	    				//disconnect.
+	    				//disconnect
 	    				if(verboseTag){
 	    					changeTextColor(VERBOSE);
 	    					sfwrite(&printLock, stdout, "BYE\n");
@@ -315,25 +297,17 @@ int main(int argc, char **argv){
 	    				int x = clearUserList(friendsList);
 	    				sfwrite(&printLock, stdout, "%d users cleared.\n", x);
 	    				close(clientfd);
-	    				// if(didMalloc){
-		    			// 	for(int j = 0; j < MAX_INPUT; j++){
-			    		// 		free(serverSig[j]);
-				    	// 	}
-			    		// }
 			    		auditLogout(argv[indexName], "intentional");
 			    		fclose(auditLog);
 						close(auditLogFd);
 	    				return EXIT_SUCCESS;
 	    			}
-	    			// printf("RECEIVED: %s\n", received);
 	    			parsePtr = strstr(received, "\r\n\r\n");
 	    			if(parsePtr != NULL){
 	    				parsePtr[-1] = '\0';
-	    				// char **serverSig = malloc(MAX_INPUT);
 	    				char *serverSig[MAX_INPUT];
 	    				for(int i = 0; i < MAX_INPUT; i++){
 	    					serverSig[i] = calloc(1, MAX_INPUT);
-	    					// memset(serverSig[i], 0, MAX_INPUT);
 	    				}
 	    				didMalloc = 1;
 	    				char *atemp;
@@ -342,7 +316,6 @@ int main(int argc, char **argv){
 	    					strcpy(serverSig[ctr], atemp);
 	    					ctr++;
 	    				}
-	    				// free(atemp2);
 	    				if(!strcmp(serverSig[0], "ERR")){
 	    					if(!strcmp(serverSig[1], "00")){
 	    						changeTextColor(ERROR);
@@ -439,7 +412,7 @@ int main(int argc, char **argv){
 	    					auditLogin(argv[indexName], argv[indexIP], argv[indexPort], "success", temp);
 	    					changeTextColor(DEFAULT);
 	    					gotMotd = 1;
-	    				}else if(!strcmp(serverSig[0], "MSG")){ /* SADJALSDJASD */
+	    				}else if(!strcmp(serverSig[0], "MSG")){
 	    					int pleaseProceed = 0;
 	    					if(strcmp(serverSig[1], serverSig[2]) == 0){
 	    						changeTextColor(ERROR);
@@ -494,11 +467,8 @@ int main(int argc, char **argv){
 	    						auditMsg(argv[indexName], "from", serverSig[indexOfOtherName], temp);
 
 	    					userNode_t* ptr = findUser(friendsList, serverSig[indexOfOtherName]);
-	    					// if(ptr != NULL)
-	    					// 	printf("CT: %d\n", ptr->chatTerminated);
 
 	    					if(ptr == NULL){ //CASE 3
-	    						// printf("CASE 3\n");
 	    						pid_t pid;
 			    				int fd[2];
 			    				if(socketpair(AF_UNIX, SOCK_STREAM, 0, fd) == -1){
@@ -514,7 +484,6 @@ int main(int argc, char **argv){
 
 			    				if(pid == 0){
 			    					close(fd[1]);
-				    				// printf("fd[0]: %d\tfd[1]: %d\n", fd[0], fd[1]);
 				    				char *params[15];
 				    				params[0] = "xterm";
 				    				params[1] = "-geometry";
@@ -533,24 +502,16 @@ int main(int argc, char **argv){
 				    				char temp2[MAX_INPUT];
 				    				memset(temp2, 0, MAX_INPUT);
 				    				itoa(auditLogFd, (char*)temp2);
-				    				// printf("the fd: %d\n", fd[0]);
 				    				params[11] = temp1;
 				    				params[12] = temp2;
 				    				params[13] = argv[indexName];
 				    				params[14] = NULL;
-				    				// for(int j = 0; j < 8; j++){
-				    				// 	if(j < 7)
-				    				// 		printf("%s ", params[j]);
-				    				// 	else
-				    				// 		printf("%s\n", params[j]);
-				    				// }
 				    				execvp(params[0], params);
 			    				}else{
 			    					close(fd[0]);
 			    					FD_SET(fd[1], &fdset);
 			    					sfwrite(&printLock, stdout, "pid: %d\n", pid);
 					    			ptr = userListAppend(friendsList, serverSig[indexOfOtherName], fd[1], pid);
-					    			// printf("Name added to friend's list: %s\nFile descriptor of the friend: %d\nProcess id of child: %d\n", serverSig[1], fd[1], pid);
 
 					    			char sigSend[MAX_INPUT];
 					    			memset(sigSend, 0, MAX_INPUT);
@@ -571,7 +532,6 @@ int main(int argc, char **argv){
 		    							strcat(sigSend, serverSig[x++]);
 		    						}
 		    						strcat(sigSend, "\x1B[0m\n");
-		    						// printf("MESSAGE CASE 3: %s\n", sigSend);
 		    						send(ptr->fd, sigSend, strlen(sigSend), 0);
 			    				}
 	    					}else{ //CASE 1 AND 2
@@ -591,9 +551,7 @@ int main(int argc, char **argv){
 				    				}
 
 				    				if(pid == 0){
-				    					// printf("FORK FOR KFORK FROFKR FORK FORK\n");
 				    					close(fd[1]);
-					    				// printf("fd[0]: %d\tfd[1]: %d\n", fd[0], fd[1]);
 					    				char *params[15];
 					    				params[0] = "xterm";
 					    				params[1] = "-geometry";
@@ -612,17 +570,10 @@ int main(int argc, char **argv){
 					    				char temp2[MAX_INPUT];
 				    					memset(temp2, 0, MAX_INPUT);
 				    					itoa(auditLogFd, (char*)temp2);
-				    					// printf("the fd: %d\n", fd[0]);
 				    					params[11] = temp1;
 				    					params[12] = temp2;
 				    					params[13] = argv[indexName];
 				    					params[14] = NULL;
-					    				// for(int j = 0; j < 8; j++){
-					    				// 	if(j < 7)
-					    				// 		printf("%s ", params[j]);
-					    				// 	else
-					    				// 		printf("%s\n", params[j]);
-					    				// }
 					    				execvp(params[0], params);
 				    				}else{
 				    					close(fd[0]);
@@ -660,12 +611,9 @@ int main(int argc, char **argv){
 
 		    							strcat(sigSend, "\x1B[0m\n");
 
-		    							// printf("MESSAGE CASE 2: %s\n", sigSend);
-		    							// printf("NULL WTFFFFFF %d\n", ptr->fd);
 		    							send(ptr->fd, sigSend, strlen(sigSend), 0);
 				    				}
 	    						}else if(ptr->chatTerminated == 0){ //SCREEN DOES EXIST. CASE 1
-	    							// printf("CASE 1\n");
 	    							char sigSend[MAX_INPUT];
 	    							int x = 4;
 	    							if(indexOfOtherName == 2){
@@ -686,7 +634,6 @@ int main(int argc, char **argv){
 
 	    							strcat(sigSend, "\x1B[0m\n");
 
-	    							// printf("MESSAGE CASE 1: %s\n", sigSend);
 	    							send(ptr->fd, sigSend, strlen(sigSend), 0);
 	    						}
 	    					}
@@ -702,7 +649,6 @@ int main(int argc, char **argv){
 	    						sfwrite(&printLock, stdout, "%s %s\n", serverSig[0], serverSig[1]);
 	    						changeTextColor(DEFAULT);
 	    					}
-	    					// write(1, PWD_PROMPT, strlen(PWD_PROMPT));
 	    					char* pwd;
 	    					pwd = getpass(NEW_PWD_PROMPT);
 	    					char sendSig[MAX_INPUT];
@@ -714,7 +660,6 @@ int main(int argc, char **argv){
 	    						changeTextColor(DEFAULT);
 	    					}
 	    					strcat(sendSig, " \r\n\r\n");
-	    					// printf("protocol: %s\n", sendSig);
 	    					sendServerRequest(sendSig);
 	    				}else if(!strcmp(serverSig[0], "AUTH")){
 	    					if(verboseTag){
@@ -728,7 +673,6 @@ int main(int argc, char **argv){
 	    					strcpy(sendSig, OLDPASS_MSG);
 	    					strcat(sendSig, pwd);
 	    					strcat(sendSig, " \r\n\r\n");
-	    					// printf("Protocol: %s\n", sendSig);
 	    					sendServerRequest(sendSig);
 	    				}else if(!strcmp(serverSig[0], "SSAP")){
 	    					if(verboseTag){
@@ -755,7 +699,6 @@ int main(int argc, char **argv){
 	    					else{
 	    						gotUOFF = 1;
 	    						close(temp->fd);
-	    						// userListDelete(friendsList, temp->name, temp->fd);
 	    					}
 	    				}else{
 	    					changeTextColor(ERROR);
@@ -784,8 +727,7 @@ int main(int argc, char **argv){
 	    						// }
 	    					}
 	    					else if(x == -1){
-	    						// sfwrite(&printLock, stdout, "\t\t\tChat screen closed!\n");
-	    						printf("Chat screen closed!\n");
+	    						sfwrite(&printLock, stdout, "\t\t\tChat screen closed!\n");
 	    					}
 	    					else{
 	    						char sigSend[MAX_INPUT];
@@ -795,7 +737,6 @@ int main(int argc, char **argv){
 	    						strcat(sigSend, argv[indexName]);
 	    						strcat(sigSend, " ");
 	    						strcat(sigSend, chatReceived);
-	    						// printf("sigsend after chatreceived: %s\n", sigSend);
 	    						strcat(sigSend, " \r\n\r\n");
 	    						sendServerRequest(sigSend);
 	    					}
@@ -898,7 +839,6 @@ void sigchld_handler(int sig){
 	pid_t pid;
 	pid = wait(NULL);
 	userNode_t* ptr = findUserPid(friendsList, pid);
-	// printf("pidhandler: %d\n", pid);
 	ptr->chatTerminated = 1;
 	FD_CLR(ptr->fd, &fdset);
 	if(gotUOFF){
@@ -958,7 +898,6 @@ ssize_t recvChat(int sockfd, char buf[]){
 	int i = 0;
 	while(i != 1024){
 		recv(sockfd, buf+i, 1, 0);
-		// printf("tits: %c\n", buf[i]);
 		if(buf[i] == '\n') //finished receiving
 			return i+1;
 		i++;

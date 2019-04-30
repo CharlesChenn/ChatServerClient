@@ -1,4 +1,3 @@
-//HW6 server file
 //server program by Dave Abelson
 #include <stdio.h>
 #include <string.h>
@@ -158,16 +157,13 @@ userList_t* userListInit(void){
 }
 
 int userListAppend(userList_t *ul, char *name, int fd){
-	//pthread_mutex_lock(&R_lock);
 	pthread_rwlock_wrlock(&list_lock);
-	//printf("APPENDING %s port: %d\n", name, fd);
 	userNode_t* k = masterList->head;
 	while(k != NULL){
 		if(!strcmp(k->name, name)){
 			//same name
 			sendClientRequest(ERROR_USER_NAME_MSG, fd);
-			sendClientRequest(BYE_MSG, fd);
-			//deleteClient(client_socket);
+			sendClientRequest(BYE_MSG, fd)
 			close(fd);
 			return -1;
 		}
@@ -195,7 +191,6 @@ int userListAppend(userList_t *ul, char *name, int fd){
 	ul->head = newUser;
 
 	ul->size++;
-	//pthread_mutex_unlock(&R_lock);
 	pthread_rwlock_unlock(&list_lock);
 	return 0;
 }
@@ -273,10 +268,7 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-	//printf("verbose =%d; thread_count=%d; optind=%d\n", verbose, thread_count, optind);
-
 	if(optind >= argc){
-		//fprintf(stderr, "Expected arguments after options\n");
 		sfwrite(&printLock, stdout, "Expected arguments after options\n");
 		return EXIT_SUCCESS;
 	}
@@ -290,7 +282,6 @@ int main(int argc, char *argv[]){
 	}
 	fclose(fp);
 
-	//printf("MOTD: %s\n", motd);
 	sfwrite(&printLock, stdout, "MOTD: %s\n", motd);
 
 	
@@ -300,7 +291,6 @@ int main(int argc, char *argv[]){
 	if(thread_count == 0){
 		thread_count = 2;
 	}
-	//printf("THREAD COUNT: %d\n", thread_count);
 	sfwrite(&printLock, stdout, "THREAD COUNT: %d\n", thread_count);
 	sem_init(&items_sem, 0, 0);
 
@@ -314,13 +304,11 @@ int main(int argc, char *argv[]){
 	memset(&client_sockets[0], 0, MAX_CLIENTS);
 
 	if((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == 0){
-		//perror("Server Socket Failed.\n");
 		sfwrite(&printLock, stdout, "Server Socket Failed\n");
 		return EXIT_FAILURE;
 	}
 
 	if(setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&operation, sizeof(operation)) < 0){
-		//perror("Set Socket Operation Failed.");
 		sfwrite(&printLock, stdout, "Set Socket Operation Failed\n");
 		return EXIT_FAILURE;
 	}
@@ -331,24 +319,19 @@ int main(int argc, char *argv[]){
 	//bind socket
 	if(bind(server_socket, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0){
 		sfwrite(&printLock, stdout, "Bind Failed\n");
-		//perror("Bind Failed.");
 		return EXIT_FAILURE;
 	}
-	// fprintf(stderr, "Currently listening on port %d\n", port);
 	sfwrite(&printLock, stdout, "Currently listening on port %d\n", port);
 
 	if(listen(server_socket, 3) < 0){
-		//perror("Listening Failed.");
 		sfwrite(&printLock, stdout, "Listening Failed.\n");
 		return EXIT_FAILURE;
 	}
 
-	//printf("Waiting for connections...\n");
 	sfwrite(&printLock, stdout, "Waiting for connections...\n");
 
 	//create init pipe
 	if(pipe(piped) == -1){
-		//perror("Pipe");
 		sfwrite(&printLock, stdout, "Pipe Error\n");
 		return EXIT_FAILURE;
 	}
@@ -358,31 +341,17 @@ int main(int argc, char *argv[]){
 		FD_SET(STDIN_FILENO, &fdset);
 		FD_SET(server_socket, &fdset);
 		max_cd = server_socket;
-		// for(i = 0; i < MAX_CLIENTS; i++){
-		// 	cd = client_sockets[i];
-		// 	if(cd > 0){
-		// 		FD_SET(cd, &fdset);
-		// 	}
-		// 	if(cd > max_cd){
-		// 		max_cd = cd;
-		// 	}
-		// }
 		activity = select(max_cd + 1, &fdset, NULL, NULL, NULL);
 
 		if((activity < 0) && (errno != EINTR)){
-			printf("HERE\n");
-			//printf("Select Error.");
 			sfwrite(&printLock, stdout, "Select Error\n");
 		}
 		//checking for incoming connection
 		if(FD_ISSET(server_socket, &fdset)){
-			//if((client_socket = accept(server_socket, (struct sockaddr *) &serverAddr, (socklen_t*) &serverAddr)) < 0){
 			if((client_socket = accept(server_socket, NULL, NULL)) < 0){
-				//perror("Accept Failure.");
 				sfwrite(&printLock, stdout, "Accept Failure\n");
 				return EXIT_FAILURE;
 			}
-			//fprintf(stderr, "Server accepted new client. Socket: %d\n", client_socket);
 			sfwrite(&printLock, stdout, "Server accepted new client. Socket: %d\n", client_socket);
 
 			for(i = 0; i < MAX_CLIENTS; i++){
@@ -408,8 +377,6 @@ int main(int argc, char *argv[]){
 			if(!strcmp(input, "/users\n")){
 				userNode_t* k = masterList->head;
 				while(k != NULL){
-					//fprintf(stderr, "%s\t", (char*)k->name);
-					//printf("%d\n", k->fd);
 					sfwrite(&printLock, stdout, "user:%s\tfd:%d\n", (char *)k->name, k->fd);
 					k = k->next;
 				}
@@ -444,11 +411,7 @@ int main(int argc, char *argv[]){
 					words[2] = strtok(NULL, " ");
 
 					disname = words[0];
-					//fprintf(stderr, "NAME: %s\n", disname);
 					sfwrite(&printLock, stdout, "NAME: %s\n", disname);
-
-				
-					//printf("\n");
 				}			
 				fclose(accts);
 	    		pthread_rwlock_unlock(&acct_lock);
@@ -465,7 +428,6 @@ int main(int argc, char *argv[]){
 
 void *loginHandler(){
 	//retrieve client info from queue
-	// printf("Going to get client from queue.\n");
 	sfwrite(&printLock, stdout, "Going to get client from queue.\n");
 	int client_socket;
 	char received[BUFFERSIZE];
@@ -495,11 +457,9 @@ void *loginHandler(){
 		int selectivity = select(client_socket + 1, &loginfd, NULL, NULL, NULL);
 
 		if((selectivity < 0) && (errno != EINTR)){
-			//printf("Select Error.");
 			sfwrite(&printLock, stdout, "Select Error\n");
 		}
 
-		// printf("LOGGING IN: %d\n", client_socket);
 		sfwrite(&printLock, stdout, "LOGGING IN: %d\n", client_socket);
 		int protocol = 0;
 		// Perform login protocol
@@ -524,7 +484,6 @@ void *loginHandler(){
 				parsePtr[-1] = '\0';
 				if(verbose == 1 && received != NULL){
 					changeTextColor(VERBOSE);
-		    		// fprintf(stderr, "RECEIVED: %s FROM: %d\n", received, client_socket);
 		    		sfwrite(&printLock, stdout, "RECEIVED: %s FROM: %d\n", received, client_socket);
 		    		changeTextColor(DEFAULT);
 				}
@@ -534,27 +493,16 @@ void *loginHandler(){
 			   	for(int i = 0; i < BUFFERSIZE; i++){
 			    	serverSig[i] = calloc(BUFFERSIZE, BUFFERSIZE);
 			    }
-			    //didMalloc = 1;
 			    char *atemp;
 			    int ctr = 0;
 			    for(atemp = strtok(received, " "); atemp; atemp = strtok(NULL, " ")){
 			    	strcpy(serverSig[ctr], atemp);
-			    	//printf("SERVERSIG: %s CTR: %d \n", serverSig[ctr], ctr);
 			    	ctr++;
 			    }
-
-			    // if(verbose == 1){
-			    // 	changeTextColor(VERBOSE);
-			    // 	// fprintf(stderr, "RECEIVED: %s FROM: %d\n", serverSig[0], client_socket);
-			    // 	sfwrite(&printLock, stdout, "RECEIVED: %s FROM: %d\n", serverSig[0], client_socket);
-			    // 	changeTextColor(DEFAULT);
-			    // }
-
 
 				if(!strcmp(serverSig[0], "WOLFIE")){
 					strcpy(output, EIFLOW_MSG);
 					if(client_socket != 0 && sendClientRequest(output, client_socket) == 0){
-						//perror("Failed to write.");
 						sfwrite(&printLock, stdout, "Failed to write.");
 					}
 					protocol = 1;			
@@ -679,13 +627,6 @@ void *loginHandler(){
 						pthread_rwlock_rdlock(&acct_lock);
 						userNode_t* newNode = masterList->head;
 						while(newNode != NULL){
-							// if(strcmp(newNode->name, inputName) == 0){
-							// 	sendClientRequest(ERROR_USER_NAME_MSG, client_socket);
-							// 	sendClientRequest(BYE_MSG, client_socket);
-							// 	deleteClient(client_socket);
-							// 	protocol = 0;
-							// 	break;
-							// }
 							newNode = newNode->next;
 						}
 						pthread_rwlock_unlock(&acct_lock);
@@ -693,19 +634,8 @@ void *loginHandler(){
 
 							memset(&output[0], 0, BUFFERSIZE);
 
-							// pthread_mutex_lock(&R_lock);
 							char *anotherbufferagain = (char *) calloc(strlen(inputName) + 1, 1);
 							strcpy(anotherbufferagain, inputName);
-
-
-							// int x = userListAppend(masterList, anotherbufferagain, client_socket);
-							// if(x == -1){
-							// 	//printf("BROKE\n");
-							// 	protocol = 3;
-							// 	break;
-							// }
-							// fillfd();
-							// pthread_mutex_unlock(&R_lock);
 
 							//WRITE NAME AND PASSWORD TO FILE
 							pthread_rwlock_wrlock(&acct_lock);
@@ -896,16 +826,6 @@ void *loginHandler(){
 							memset(&output[0], 0, BUFFERSIZE);
 							char *anotherbuffer = (char *) calloc(strlen(disname) + 1, 1);
 							strcpy(anotherbuffer, disname);
-							// pthread_mutex_lock(&R_lock);
-							// int y =userListAppend(masterList, anotherbuffer, client_socket);
-							// if(y == -1){
-							// 	break;
-							// }
-							// fillfd();
-							// //char *buffy = "\r\n";
-							// write(piped[1], "\r\0", 2);
-							//printf("WRITING TO PIPE\n");
-							// pthread_mutex_unlock(&R_lock);
 						}
 
 						sendClientRequest(PASSWORD_MSG, client_socket);
@@ -944,14 +864,12 @@ void *loginHandler(){
 void *communication(){
 	fd_set ready_set;
 	int i, selection;
-	//int max_sd = 0;
 	char received[BUFFERSIZE];
 	char untouched[BUFFERSIZE];
 	char output[BUFFERSIZE];
 	char *parsePtr;
 
 	while(TRUE){
-		// int max_sd = 0;
 		userNode_t* z = masterList->head;
 		if(z == NULL){ 
 			commbool = 0;
@@ -960,16 +878,12 @@ void *communication(){
 		int sd = 0;
 		ready_set = commfd;
 		selection = select(25 + 1, &ready_set, NULL, NULL, NULL);
-		//printf("LOW\n");
 		if((selection < 0) && (errno != EINTR)){
 			sfwrite(&printLock, stdout, "Select Error.\n");
-			//printf("Select Error.\n");
 		}
 		if(FD_ISSET(piped[0], &ready_set)){
-			//	printf("PIPED\n");
 			char blank[BUFFERSIZE];
 			read(piped[0], blank, BUFFERSIZE);
-			//printf("%s\n", blank);
 		}
 		for(i = 0; i < MAX_CLIENTS; i++){
 			sd = commClients[i];
@@ -977,7 +891,6 @@ void *communication(){
 			if(FD_ISSET(sd, &ready_set)){
 				memset(&received[0], 0, BUFFERSIZE);
 				Recv(sd, received);
-				//printf("received: %s from: %d\n", received, sd);
 				strcpy(untouched, received);
 				parsePtr = strstr(received, "\r\n\r\n");
 				if(parsePtr == NULL){
@@ -987,7 +900,6 @@ void *communication(){
 				parsePtr[-1] = '\0';
 				if(verbose == 1 && received != NULL){
 					changeTextColor(VERBOSE);
-	    			// fprintf(stderr, "RECEIVED: %s FROM: %d\n", received, sd);
 	    			sfwrite(&printLock, stdout, "RECEIVED: %s FROM: %d\n", received, sd);
 	    			changeTextColor(DEFAULT);
 	    		}
@@ -1037,7 +949,6 @@ void *communication(){
 			userNode_t* i = masterList->head;
 			while(i != NULL){
 				strcat(output, (char*)i->name);
-				//fprintf(stderr, "NAME: %s\n", (char*)i->name);
 				i = i->next;
 				if(i != NULL){
 					strcat(output, USER_SPACE_MSG);
@@ -1045,7 +956,6 @@ void *communication(){
 			}
 			strcat(output, END_MSG);
 			sendClientRequest(output, sd);
-			//fprintf(stderr, "Size is: %d\n", masterList->size);
 			memset(&output[0], 0, BUFFERSIZE);
 
 		}
@@ -1090,12 +1000,6 @@ void *communication(){
 			}
 			userNode_t* i = masterList->head;
 			while(i != NULL){
-				printf("TESTING\n");
-				// if(!strcmp(i->name, fromname)){
-				// 	tofd = i->fd;
-				// 	nameFound = 1;
-				// 	printf("HI I am here\n");
-				// }
 				if(!strcmp(i->name, toname)){
 					nameFound = 1;
 					tofd = i->fd;
@@ -1129,21 +1033,12 @@ void sigint_handler(int sig){
 	}
 	sfwrite(&printLock, stdout, "I got you, chief.\n");
 
-	//printf("I gotchu homeboy\n");
-
 	exit(0);
 	return;
 }
 
 void printServerHelpMenu(){
 	printf("\n");
-	// printf("./server [-h|v] [-t THREAD_COUNT] PORT_NUMBER MOTD [ACCOUNTS_FILE]\n");
-	// printf("-h\t\tDisplays this help menu, and returns EXIT_SUCCESS.\n");
-	// printf("-t THREAD_COUNT\t\tThe number of threads used for the login queue.\n");
-	// printf("-v\t\tVerbose print all incoming and outgoing protocol verbs & content.\n");
-	// printf("PORT_NUMBER\tPort number to listen on.\n");
-	// printf("MOTD\t\tMessage to display to the client when they connect.\n");
-	// printf("ACCOUNTS_FILE\tFile containing username and password data to be loaded upon execution.\n");
 	sfwrite(&printLock, stdout, "\n");
 	sfwrite(&printLock, stdout, "./server [-h|v] [-t THREAD_COUNT] PORT_NUMBER MOTD [ACCOUNTS_FILE]\n");
 	sfwrite(&printLock, stdout, "-h\t\tDisplays this help menu, and returns EXIT_SUCCESS.\n");
@@ -1156,17 +1051,6 @@ void printServerHelpMenu(){
 }
 
 void printServerMenu(){
-	// printf("\n");
-	// printf("\x1B[1;36m");
-	// fflush(stdout);
-	// printf("----------Server Commands----------\n");
-	// printf("/accts\t\t\tPrints list of accounts in the server.\n");
-	// printf("/users\t\t\tPrints list of users using the server.\n");
-	// printf("/help\t\t\tPrints the server commands.\n");
-	// printf("/shutdown\t\t\tShuts the server down.\n");
-	// printf("\x1B[0m");
-	// fflush(stdout);
-	// printf("\n");
 	sfwrite(&printLock, stdout, "\n");
 	sfwrite(&printLock, stdout, "\x1B[1;36m");
 	fflush(stdout);
@@ -1188,8 +1072,6 @@ ssize_t Recv(int sockfd, char buf[]){
 	while(i != 1000 || !bsR1 || !bsN1 || !bsR2 || !bsN2){
 		int x = recv(sockfd, buf+i, 1, 0);
 		if(x==0) return 0;
-		// printf("AFTERRECV: %s\n", &buf[i]);
-		// sleep(1);
 		if(((buf[i]) == '\r') && (bsN1 == 0) && (buf[i-1]) == ' '){
 			space = 1;
 			bsR1 = 1;
@@ -1222,11 +1104,9 @@ ssize_t Recv(int sockfd, char buf[]){
 int sendClientRequest(char* output, int client_socket){
 	if(verbose == 1){
 		changeTextColor(VERBOSE);
-		//fprintf(stderr, "SENDING: %s TO: %d\n", output, client_socket);
 		sfwrite(&printLock, stdout, "SENDING: %s TO: %d\n", output, client_socket);
 		changeTextColor(DEFAULT);
 	}
-	//printf("%zu\n", strlen(output));
 	if((send(client_socket, output, strlen(output), 0)) == -1)
 		return 0;
 	else
